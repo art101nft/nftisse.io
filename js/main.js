@@ -117,8 +117,7 @@ async function _mintPublic() {
   try {
     await mintPublic();
   } catch(e) {
-    $('#mintMessage').html(`${e.message} - try again`);
-    await updateMintStatus();
+    $('#mintMessage').html(`${e.message} - refresh and try again`);
     return false;
   }
 }
@@ -173,6 +172,7 @@ async function mintPublic() {
   if (res.status) {
     $('#mintMessage').html(`Success! Head to <a target=_blank href="https://${opensea_uri}/account?search[resultModel]=ASSETS&search[sortBy]=LAST_TRANSFER_DATE&search[sortAscending]=false">OpenSea</a> to see your NFTs!<br><br><a target=_blank href="https://${etherscan_uri}/tx/${res.transactionHash}">Etherscan</a>`);
   } else {
-    $('#mintMessage').html(`Failed. ${res}`);
+    // $('#mintMessage').html(`Failed. ${res}`);
+    throw new Error(`Transaction failed: ${res}`)
   }
 }
