@@ -29,6 +29,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
   window.ethereum.on('accountsChanged', function (accounts) {
     window.location.href = '';
+  });
+  $('#refresh').click(async function () {
+    await updateMintStatus();
   })
 });
 
