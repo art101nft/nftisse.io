@@ -1,6 +1,5 @@
 const contractAddress = '0xf795048ba9c0bbb2d8d2e0d06fb0c7f0df79e966'; // rinkeby
 const chainId = '4'; // rinkeby
-let timer;
 
 window.addEventListener('DOMContentLoaded', async () => {
   if (!window.ethereum.selectedAddress) {
@@ -21,10 +20,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   } else {
     await updateMintStatus();
-    let _i = setInterval(async function () {
-      clearInterval(timer);
-      await updateMintStatus();
-    }, 10000);
+    let _i = setInterval(updateMintStatus, 10000);
     $('#mintButton').click(async function (){
       $('#mintForm').addClass('hidden');
       clearInterval(_i);
@@ -83,20 +79,22 @@ async function updateMintStatus() {
         $('#mintForm').removeClass('hidden');
       } else {
         const later = new Date(Number(new Date().getTime()) + (Number(timeUntilNext) * 1000)).getTime();
-        timer = setInterval(async function() {
-          const now = new Date().getTime();
-          const distance = later - now;
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-          const countdown = "<b>" + hours + "h " + minutes + "m " + seconds + "s " + "</b>";
-          $('#mintMessage').html(`Minting is live for R. Mutt holders, but you are not elligible to mint right now! <br><br>Public minting opens in ${countdown} <div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
-          if (distance <= 0) {
-            clearInterval(timer);
-            await updateMintStatus();
-          }
-        }, 1000);
+        const now = new Date().getTime();
+        const distance = later - now;
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        if (seconds >= 30) {
+          seconds = `>30`;
+        } else {
+          seconds = `<30`;
+        }
+        const countdown = `<b>${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+        $('#mintMessage').html(`Minting is live for R. Mutt holders, but you are not elligible to mint right now! <br><br>Public minting opens in ${countdown} <div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+        if (distance <= 0) {
+          await updateMintStatus();
+        }
       }
     } else {
       // public can mint up to 3
