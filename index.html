@@ -6,15 +6,13 @@
         <meta name="twitter:title" content="nftisse.io">
         <meta name="twitter:description" content="NFT-isse - nftisse.io - A Collection of 3072 Provably-Rare Matisse Inspired NFT Cut-Outs by ART101.">
         <meta name="twitter:creator" content="@art101NFT">
-        <meta name="twitter:image" content="/img/nftisse.svg">
+        <meta name="twitter:image" content="https://nftisse.io/img/nftisse.svg">
         <meta name="twitter:domain" content="https://nftisse.io">
         <meta property="og:type" content="nftisse.io">
         <meta property="og:title" content="NFT-isse - nftisse.io - A Collection of 3072 Provably-Rare Matisse Inspired NFT Cut-Outs by ART101." />
         <meta property="og:description" content="R. Mutt is a free-to-mint generative collection of 2,048 unique, meme-able, 3-D, and fully-interactive, NFT parodies of Marcel Duchamp's famous work, Fountain." />
         <meta property="og:url" content="https://nftisse.io" />
         <meta property="og:image" content="https://nftisse.io/img/nftisse.svg" />
-
-
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
         <title>NFT-isse - nftisse.io - A Collection of 3072 Provably-Rare Matisse Inspired NFT Cut-Outs by ART101.</title>
@@ -66,9 +64,20 @@
           <img src="img/nftisse.svg" class="img-fluid" style="max-height: 248px"/>
           <br></br>
         </div>
-        <div class="col-xs-10 col-sm-10 col-md-10 col-lg-8 col-xl-8 text-center">
+        <!-- <div class="col-xs-10 col-sm-10 col-md-10 col-lg-8 col-xl-8 text-center">
           <div class="" style="margin-top:16px;"></div>
-           <a href="#" class="Mutt_Button2">NFT-isse .Soon</a>
+           <a href="/mint.html" class="Mutt_Button2">Mint</a>
+        </div> -->
+
+        <i id="loading" class="fas fa-circle-notch fa-2x fa-spin hidden col-12 text-center"></i>
+        <h5 style="color:black;" class=""><p id="mintMessage" class="col-12 text-center"></p></h5></br>
+        <a class="Mutt_Button2 hidden" id="connectButton">Connect</a>
+        <div id="mintForm" class="hidden col-12 text-center">
+          <input type="number" step="1" name="amount" min="1" id="numberOfTokens" style="width: 5em; line-height: 3em;">
+          <a id="mintButton" class="Mutt_Button2" style="border-radius: 0px;">Mint</a>
+        </div>
+        <div class="col-12 text-center">
+          <a href="/">refresh</a>
         </div>
         <div class="col-12 text-center">
           <div class="" style="margin-top:16px;"></div>
@@ -343,9 +352,6 @@
 
 </main>
 
-
-      <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
       <script type="text/javascript">
           function openNav() {
         document.getElementById("mySidenav").style.width = "320px";
@@ -359,11 +365,11 @@
       <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-      <script src="/js/vendor/metamask-onboarding.bundle.js"></script>
-      <script src="/js/vendor/web3-1.3.6.min.js"></script>
-      <script src="/js/plugins.js"></script>
-      <!-- <script src="/js/contracts/nftisse.js"></script> -->
-      <script src="/js/main.js"></script>
+      <script src="js/plugins.js"></script>
+      <script src="js/vendor/metamask-onboarding.bundle.js"></script>
+      <script src="js/vendor/web3-1.3.6.min.js"></script>
+      <script src="js/contract/nftisse.js"></script>
+      <script src="js/main.js?ver=1"></script>
 
       <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
       <script>
