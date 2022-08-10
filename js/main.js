@@ -55,6 +55,7 @@ async function getWalletAddress() {
 
 async function updateMintStatus() {
   $('#loading').removeClass('hidden');
+  await switchNetwork();
   const w3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545");
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
@@ -123,6 +124,7 @@ async function mintPublic() {
 
   let res;
   let gasLimit;
+  await switchNetwork();
   const w3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545");
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
