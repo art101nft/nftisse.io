@@ -1,8 +1,8 @@
 const contractAddress = '0xf795048ba9c0bbb2d8d2e0d06fb0c7f0df79e966'; // rinkeby
 const chainId = '4'; // rinkeby
+let timer;
 
 window.addEventListener('DOMContentLoaded', async () => {
-
   if (!window.ethereum.selectedAddress) {
     const btn = $('#connectButton');
     btn.removeClass('hidden');
@@ -21,14 +21,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   } else {
     await updateMintStatus();
-    let _i = setInterval(updateMintStatus, 10000);
+    let _i = setInterval(async function () {
+      clearInterval(timer);
+      await updateMintStatus();
+    }, 10000);
     $('#mintButton').click(async function (){
       $('#mintForm').addClass('hidden');
       clearInterval(_i);
       await _mintPublic();
     });
   }
-
   window.ethereum.on('accountsChanged', function (accounts) {
     window.location.href = '';
   })
@@ -77,22 +79,21 @@ async function updateMintStatus() {
   } else {
     if (mintPhase == 0) {
       if (mintsAvailable > 0) {
-        $('#mintMessage').html(`Minting is live!<br><br>Wallet ${walletShort} can mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+        $('#mintMessage').html(`Minting for R. Mutt holders is live!<br><br>Wallet ${walletShort} can mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
         $('#mintForm').removeClass('hidden');
       } else {
-        let now = new Date().getTime();
-        const later = new Date(Number(now) + (Number(timeUntilNext) * 1000)).getTime();
-        const y = setInterval(async function() {
-          now = new Date().getTime();
+        const later = new Date(Number(new Date().getTime()) + (Number(timeUntilNext) * 1000)).getTime();
+        timer = setInterval(async function() {
+          const now = new Date().getTime();
           const distance = later - now;
           const days = Math.floor(distance / (1000 * 60 * 60 * 24));
           const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((distance % (1000 * 60)) / 1000);
           const countdown = "<b>" + hours + "h " + minutes + "m " + seconds + "s " + "</b>";
-          $('#mintMessage').html(`Minting is live, but you are not elligible to mint right now! <br><br>Public minting opens in ${countdown} <div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
-          if (distance < 0) {
-            clearInterval(y);
+          $('#mintMessage').html(`Minting is live for R. Mutt holders, but you are not elligible to mint right now! <br><br>Public minting opens in ${countdown} <div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+          if (distance <= 0) {
+            clearInterval(timer);
             await updateMintStatus();
           }
         }, 1000);
@@ -121,7 +122,6 @@ async function mintPublic() {
     etherscan_uri = 'rinkeby.etherscan.io';
     opensea_uri = 'testnets.opensea.io';
   }
-
   let res;
   let gasLimit;
   await switchNetwork();
@@ -134,17 +134,14 @@ async function mintPublic() {
     amountToMint = 1;
     $('#numberOfTokens').val(amountToMint);
   }
-
   // Define the contract we want to use
   const contract = new w3.eth.Contract(contractABI, contractAddress, {from: walletAddress});
-
   // Fail if sales are paused
   const mintingIsActive = await contract.methods.mintingIsActive().call();
   if (!mintingIsActive) {
     $('#mintMessage').html(`Sales are currently paused on this contract. Try again later.`);
     return false;
   }
-
   // Fail if requested amount would exceed supply
   let currentSupply = await contract.methods.totalSupply().call();
   let maxSupply = await contract.methods.maxSupply().call();
@@ -152,34 +149,20 @@ async function mintPublic() {
     $('#mintMessage').html(`Requesting ${amountToMint} would exceed the maximum token supply of ${maxSupply}. Current supply is ${currentSupply}, so try minting ${maxSupply - currentSupply}.`)
     return false;
   }
-
-  // Fail if requested amount would exceed max per wallet
-  // let publicBalance = await contract.methods.publicBalance(walletAddress).call();
-  // let maxWallet = await contract.methods.maxWallet().call();
-  // if (Number(amountToMint) + Number(publicBalance) > Number(maxWallet)) {
-  //   $('#mintMessage')(`Requesting ${amountToMint} would exceed the maximum wallet amount of ${maxWallet}. Current balance is ${publicBalance}, so try minting ${maxWallet - publicBalance}.`)
-  //   return false;
-  // }
-
   // Estimate gas limit
   await contract.methods.mintPublic(amountToMint).estimateGas({from: walletAddress}, function(err, gas){
     gasLimit = gas;
   });
-
   // Show loading icon
   $('#mintForm').addClass('hidden');
   $('#loading').removeClass('hidden');
   $('#mintMessage').html(`Attempting to mint ${amountToMint} tokens for ${Number(w3.utils.fromWei((gasLimit * gasPrice).toString())).toFixed(4)} Ξ to wallet ${walletShort}`);
-
   res = await contract.methods.mintPublic(amountToMint).send({
     from: walletAddress,
     gasPrice: gasPrice,
     gas: gasLimit
   });
-  console.log(res);
-
   $('#loading').addClass('hidden');
-
   if (res.status) {
     $('#mintMessage').html(`Success! Head to <a target=_blank href="https://${opensea_uri}/account?search[resultModel]=ASSETS&search[sortBy]=LAST_TRANSFER_DATE&search[sortAscending]=false">OpenSea</a> to see your NFTs!<br><br><a target=_blank href="https://${etherscan_uri}/tx/${res.transactionHash}">Etherscan</a>`);
   } else {
