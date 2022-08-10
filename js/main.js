@@ -1,8 +1,9 @@
 const contractAddress = '0xf795048ba9c0bbb2d8d2e0d06fb0c7f0df79e966'; // rinkeby
 const chainId = '4'; // rinkeby
+const w3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545");
 
 window.addEventListener('DOMContentLoaded', async () => {
-  if (!window.ethereum.selectedAddress) {
+  if (!window.ethereum || !window.ethereum.selectedAddress) {
     const btn = $('#connectButton');
     btn.removeClass('hidden');
     btn.click(async function (){
@@ -13,26 +14,33 @@ window.addEventListener('DOMContentLoaded', async () => {
         await onboarding.startOnboarding();
       } else {
         await onboarding.stopOnboarding();
+        await switchNetwork();
+        const res = await getWalletAddress();
+        if (res) btn.addClass('hidden');
+        window.location.href = '';
       }
-      await switchNetwork();
-      const res = await getWalletAddress();
-      if (res) btn.addClass('hidden');
     });
   } else {
+    // refresh page if changing wallets
+    window.ethereum.on('accountsChanged', async function (accounts) {
+      window.location.href = '';
+    });
+    // unhide refresh link
+    $('#refresh').removeClass('hidden');
+    // update mint message/status when clicking refresh
+    $('#refresh').click(async function () {
+      await updateMintStatus();
+    });
+    // update mint message/status now and every 10 seconds
     await updateMintStatus();
     let _i = setInterval(updateMintStatus, 10000);
+    // hide form and stop refreshing message/status
     $('#mintButton').click(async function (){
       $('#mintForm').addClass('hidden');
       clearInterval(_i);
       await _mintPublic();
     });
   }
-  window.ethereum.on('accountsChanged', function (accounts) {
-    window.location.href = '';
-  });
-  $('#refresh').click(async function () {
-    await updateMintStatus();
-  })
 });
 
 async function switchNetwork(){
@@ -57,7 +65,6 @@ async function getWalletAddress() {
 async function updateMintStatus() {
   $('#loading').removeClass('hidden');
   await switchNetwork();
-  const w3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545");
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
   const contract = new w3.eth.Contract(contractABI, contractAddress, {from: walletAddress});
@@ -126,7 +133,6 @@ async function mintPublic() {
   let res;
   let gasLimit;
   await switchNetwork();
-  const w3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545");
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
   const gasPrice = await w3.eth.getGasPrice();
