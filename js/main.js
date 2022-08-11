@@ -71,27 +71,34 @@ async function updateMintStatus() {
   const currentSupply = await contract.methods.totalSupply().call();
   const maxSupply = await contract.methods.maxSupply().call();
   const maxMints = await contract.methods.maxMint().call();
+  const maxWallet = await contract.methods.maxWallet().call();
   const mintsAvailable = await contract.methods.getMintAmount().call();
   const mintPhase = await contract.methods.getMintPhase().call();
   const mintingIsActive = await contract.methods.mintingIsActive().call();
   const timeUntilNext = await contract.methods.getTimeUntilNextPhase().call();
+  const balance = await contract.methods.balanceOf(walletAddress).call();
+  let canMint;
+  if (Number(balance) >= Number(maxWallet)) {
+    canMint = 0;
+  } else {
+    canMint = maxWallet - balance;
+  }
   const mintedOut = currentSupply == maxSupply;
   if (mintedOut) {
     $('#mintMessage').html(`That's all folks, supply is minted out! Check secondary markets to purchase an NFT-isse.<br><br><a href="https://opensea.io/collection/nftisse" target=_blank>Opensea</a>`);
     return false;
   }
   if (!mintingIsActive) {
-    $('#mintMessage').html(`Minting is not active yet! Check back later.<br><br>Wallet ${walletShort} is slated to mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+    $('#mintMessage').html(`Minting is not active yet! Check back later.<br><br>Wallet <b>${walletShort}</b> is slated to mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
   } else {
     if (mintPhase == 0) {
       if (mintsAvailable > 0) {
-        $('#mintMessage').html(`Minting for R. Mutt holders is live!<br><br>Wallet ${walletShort} can mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+        $('#mintMessage').html(`Minting for R. Mutt holders is live!<br><br>Wallet <b>${walletShort}</b> can mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
         $('#mintForm').removeClass('hidden');
       } else {
         const later = new Date(Number(new Date().getTime()) + (Number(timeUntilNext) * 1000)).getTime();
         const now = new Date().getTime();
         const distance = later - now;
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((distance % (1000 * 60)) / 1000);
@@ -107,7 +114,8 @@ async function updateMintStatus() {
         }
       }
     } else {
-      // public can mint up to 3
+      $('#mintMessage').html(`Minting for public is live!<br><br>${maxMints} per tx, ${maxWallet} per wallet. Wallet <b>${walletShort}</b> can mint ${canMint} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+      if (canMint) $('#mintForm').removeClass('hidden');
     }
   }
   $('#loading').addClass('hidden');
@@ -162,7 +170,7 @@ async function mintPublic() {
   // Show loading icon
   $('#mintForm').addClass('hidden');
   $('#loading').removeClass('hidden');
-  $('#mintMessage').html(`Attempting to mint ${amountToMint} tokens for ${Number(w3.utils.fromWei((gasLimit * gasPrice).toString())).toFixed(4)} Ξ to wallet ${walletShort}`);
+  $('#mintMessage').html(`Attempting to mint ${amountToMint} tokens for ${Number(w3.utils.fromWei((gasLimit * gasPrice).toString())).toFixed(4)} Ξ to wallet <b>${walletShort}</b>`);
   res = await contract.methods.mintPublic(amountToMint).send({
     from: walletAddress,
     gasPrice: gasPrice,
