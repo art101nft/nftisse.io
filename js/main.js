@@ -1,9 +1,9 @@
-const contractAddress = '0xf795048ba9c0bbb2d8d2e0d06fb0c7f0df79e966'; // rinkeby
-const chainId = '4'; // rinkeby
+const contractAddress = '0x207ad995e5014441b81ca6c70709d7e738203830'; // mainnet
+const chainId = '1'; // mainnet
 const w3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545");
 
 window.addEventListener('DOMContentLoaded', async () => {
-  if (!window.ethereum || !window.ethereum.selectedAddress) {
+  if (!window.ethereum || !window.ethereum.selectedAddress || !window.ethereum.isMetaMask) {
     const btn = $('#connectButton');
     btn.removeClass('hidden');
     btn.click(async function (){
@@ -17,46 +17,51 @@ window.addEventListener('DOMContentLoaded', async () => {
         await switchNetwork();
         const res = await getWalletAddress();
         if (res) btn.addClass('hidden');
-        window.location.href = '';
+        handleEthereum();
       }
     });
   } else {
-    // refresh page if changing wallets
-    window.ethereum.on('accountsChanged', async function (accounts) {
-      window.location.href = '';
-    });
-    // unhide refresh link
-    $('#refresh').removeClass('hidden');
-    // update mint message/status when clicking refresh
-    $('#refresh').click(async function () {
-      await updateMintStatus();
-    });
-    // update mint message/status now and every 10 seconds
-    await updateMintStatus();
-    let _i = setInterval(updateMintStatus, 10000);
-    // Calculate mint values on form input
-    let timeout = null;
-    $('input').on('input', function(){
-      clearTimeout(timeout);
-      timeout = setTimeout(function () {
-        const mintPriceEther = $('#mintPriceEther').val();
-        const numberOfTokens = $('#numberOfTokens').val();
-        if (isNaN(mintPriceEther) || isNaN(numberOfTokens)) return false;
-        const mintPriceWei = w3.utils.toWei(mintPriceEther);
-        const mintValueWei = mintPriceWei * numberOfTokens;
-        const mintValueEther = w3.utils.fromWei(mintValueWei.toString());
-        $('#totalValue').html(`(~${mintValueEther} Ξ)`)
-      });
-    });
-    // hide form and stop refreshing message/status
-    $('.mintButton').on('click', async function (){
-      const mintPriceEther = $('#mintPriceEther').val();
-      $('#mintForm').addClass('hidden');
-      clearInterval(_i);
-      await _mintPublic(mintPriceEther);
-    });
+    handleEthereum()
   }
 });
+
+async function handleEthereum() {
+  // refresh page if changing wallets
+  window.ethereum.on('accountsChanged', async function (accounts) {
+    // window.location.href = '';
+    handleEthereum();
+  });
+  // unhide refresh link
+  $('#refresh').removeClass('hidden');
+  // update mint message/status when clicking refresh
+  $('#refresh').click(async function () {
+    await updateMintStatus();
+  });
+  // update mint message/status now and every 10 seconds
+  await updateMintStatus();
+  let _i = setInterval(updateMintStatus, 10000);
+  // Calculate mint values on form input
+  let timeout = null;
+  $('input').on('input', function(){
+    clearTimeout(timeout);
+    timeout = setTimeout(function () {
+      const mintPriceEther = $('#mintPriceEther').val();
+      const numberOfTokens = $('#numberOfTokens').val();
+      if (isNaN(mintPriceEther) || isNaN(numberOfTokens)) return false;
+      const mintPriceWei = w3.utils.toWei(mintPriceEther);
+      const mintValueWei = mintPriceWei * numberOfTokens;
+      const mintValueEther = w3.utils.fromWei(mintValueWei.toString());
+      $('#totalValue').html(`(~${mintValueEther} Ξ)`)
+    });
+  });
+  // hide form and stop refreshing message/status
+  $('.mintButton').on('click', async function (){
+    const mintPriceEther = $('#mintPriceEther').val();
+    $('#mintForm').addClass('hidden');
+    clearInterval(_i);
+    await _mintPublic(mintPriceEther);
+  });
+}
 
 async function switchNetwork(){
   // don't do this if no metamask (errors on coinbase wallet)
@@ -92,12 +97,6 @@ async function updateMintStatus() {
   const mintingIsActive = await contract.methods.mintingIsActive().call();
   const timeUntilNext = await contract.methods.getTimeUntilNextPhase().call();
   const balance = await contract.methods.balanceOf(walletAddress).call();
-  let canMint;
-  if (Number(balance) >= Number(maxWallet)) {
-    canMint = 0;
-  } else {
-    canMint = maxWallet - balance;
-  }
   const mintedOut = currentSupply == maxSupply;
   if (mintedOut) {
     $('#mintMessage').html(`That's all folks, supply is minted out! Check secondary markets to purchase an NFT-isse.<br><br><a href="https://opensea.io/collection/nftisse" target=_blank>Opensea</a>`);
@@ -129,8 +128,8 @@ async function updateMintStatus() {
         }
       }
     } else {
-      $('#mintMessage').html(`Minting for public is live!<br><br>${maxMints} per tx, ${maxWallet} per wallet. Wallet <b>${walletShort}</b> can mint ${canMint} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
-      if (canMint) $('#mintForm').removeClass('hidden');
+      $('#mintMessage').html(`Minting for public is live!<br><br>${maxMints} per tx, ${maxWallet} per wallet. Wallet <b>${walletShort}</b> can mint ${mintsAvailable} tokens.<div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
+      if (mintsAvailable) $('#mintForm').removeClass('hidden');
     }
   }
   $('#loading').addClass('hidden');
