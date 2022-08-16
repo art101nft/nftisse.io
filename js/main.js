@@ -14,7 +14,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         await onboarding.startOnboarding();
       } else {
         await onboarding.stopOnboarding();
-        await switchNetwork();
         const res = await getWalletAddress();
         if (res) btn.addClass('hidden');
         handleEthereum();
@@ -84,7 +83,6 @@ async function getWalletAddress() {
 
 async function updateMintStatus() {
   $('#loading').removeClass('hidden');
-  await switchNetwork();
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
   const contract = new w3.eth.Contract(contractABI, contractAddress, {from: walletAddress});
@@ -153,7 +151,6 @@ async function mintPublic(mintPrice) {
   }
   let res;
   let gasLimit;
-  await switchNetwork();
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
   const gasPrice = await w3.eth.getGasPrice();
@@ -182,7 +179,7 @@ async function mintPublic(mintPrice) {
     return false;
   }
   // Estimate gas limit
-  await contract.methods.mintPublic(amountToMint).estimateGas({from: walletAddress, value: mintValueWei}, function(err, gas){
+  await contract.methods.mintPublic(amountToMint).estimateGas({from: walletAddress}, function(err, gas){
     gasLimit = gas;
   });
   // Show loading icon
