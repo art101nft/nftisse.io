@@ -34,11 +34,26 @@ window.addEventListener('DOMContentLoaded', async () => {
     // update mint message/status now and every 10 seconds
     await updateMintStatus();
     let _i = setInterval(updateMintStatus, 10000);
+    // Calculate mint values on form input
+    let timeout = null;
+    $('input').on('input', function(){
+      clearTimeout(timeout);
+      timeout = setTimeout(function () {
+        const mintPriceEther = $('#mintPriceEther').val();
+        const numberOfTokens = $('#numberOfTokens').val();
+        if (isNaN(mintPriceEther) || isNaN(numberOfTokens)) return false;
+        const mintPriceWei = w3.utils.toWei(mintPriceEther);
+        const mintValueWei = mintPriceWei * numberOfTokens;
+        const mintValueEther = w3.utils.fromWei(mintValueWei.toString());
+        $('#totalValue').html(`(~${mintValueEther} Ξ)`)
+      });
+    });
     // hide form and stop refreshing message/status
-    $('#mintButton').click(async function (){
+    $('.mintButton').on('click', async function (){
+      const mintPriceEther = $('#mintPriceEther').val();
       $('#mintForm').addClass('hidden');
       clearInterval(_i);
-      await _mintPublic();
+      await _mintPublic(mintPriceEther);
     });
   }
 });
@@ -121,16 +136,16 @@ async function updateMintStatus() {
   $('#loading').addClass('hidden');
 }
 
-async function _mintPublic() {
+async function _mintPublic(mintPrice) {
   try {
-    await mintPublic();
+    await mintPublic(mintPrice);
   } catch(e) {
     $('#mintMessage').html(`${e.message} - refresh and try again`);
     return false;
   }
 }
 
-async function mintPublic() {
+async function mintPublic(mintPrice) {
   let etherscan_uri = 'etherscan.io';
   let opensea_uri = 'opensea.io';
   if (window.ethereum.chainId == "0x4") {
@@ -148,6 +163,10 @@ async function mintPublic() {
     amountToMint = 1;
     $('#numberOfTokens').val(amountToMint);
   }
+  // Figure out value to send if user opting to send ETH
+  const mintPriceWei = w3.utils.toWei(mintPrice);
+  const mintValueWei = mintPriceWei * amountToMint;
+  const mintValueEther = w3.utils.fromWei(mintValueWei.toString());
   // Define the contract we want to use
   const contract = new w3.eth.Contract(contractABI, contractAddress, {from: walletAddress});
   // Fail if sales are paused
@@ -164,17 +183,18 @@ async function mintPublic() {
     return false;
   }
   // Estimate gas limit
-  await contract.methods.mintPublic(amountToMint).estimateGas({from: walletAddress}, function(err, gas){
+  await contract.methods.mintPublic(amountToMint).estimateGas({from: walletAddress, value: mintValueWei}, function(err, gas){
     gasLimit = gas;
   });
   // Show loading icon
   $('#mintForm').addClass('hidden');
   $('#loading').removeClass('hidden');
-  $('#mintMessage').html(`Attempting to mint ${amountToMint} tokens for ${Number(w3.utils.fromWei((gasLimit * gasPrice).toString())).toFixed(4)} Ξ to wallet <b>${walletShort}</b>`);
+  $('#mintMessage').html(`Attempting to mint ${amountToMint} tokens for ${Number(w3.utils.fromWei((gasLimit * gasPrice + mintValueWei).toString())).toFixed(5)} Ξ to wallet <b>${walletShort}</b>`);
   res = await contract.methods.mintPublic(amountToMint).send({
     from: walletAddress,
     gasPrice: gasPrice,
-    gas: gasLimit
+    gas: gasLimit,
+    value: mintValueWei
   });
   $('#loading').addClass('hidden');
   if (res.status) {

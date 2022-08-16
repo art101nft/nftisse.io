@@ -73,8 +73,15 @@
         <h5 style="color:black;" class=""><p id="mintMessage" class="col-12 text-center"></p></h5></br>
         <a class="Mutt_Button2 hidden" id="connectButton">Connect</a>
         <div id="mintForm" class="hidden col-12 text-center">
-          <input type="number" step="1" name="amount" min="1" id="numberOfTokens" style="width: 5em; line-height: 3em;">
-          <a id="mintButton" class="Mutt_Button2" style="border-radius: 0px;">Mint</a>
+          <div style="margin-bottom:12px;">
+            <label for="amount">Amount to Mint:</label>
+            <input type="number" step="1" name="amount" min="1" value="1" id="numberOfTokens" style="width: 5em; line-height: 3em;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label for="price">Donation:</label>
+            <input type="number" step=".001" name="price" value="0" min="0" id="mintPriceEther" style="width: 5em; line-height: 3em;">
+          </div>
+          <a class="mintButton Mutt_Button2" data="0.0" style="border-radius: 0px;">Mint <span id="totalValue"></span></a>
         </div>
         <div class="col-12 text-center">
           <a id="refresh" class="hidden">refresh</a>
