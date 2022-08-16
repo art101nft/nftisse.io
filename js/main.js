@@ -151,6 +151,7 @@ async function mintPublic(mintPrice) {
   }
   let res;
   let gasLimit;
+  let estimatedGas;
   const walletAddress = await getWalletAddress();
   const walletShort = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
   const gasPrice = await w3.eth.getGasPrice();
@@ -181,11 +182,18 @@ async function mintPublic(mintPrice) {
   // Estimate gas limit
   await contract.methods.mintPublic(amountToMint).estimateGas({from: walletAddress}, function(err, gas){
     gasLimit = gas;
+    estimatedGas = gas;
   });
+  if (amountToMint > 1) {
+    gasLimit = 2000000;
+  } else {
+    gasLimit = 1000000;
+  }
   // Show loading icon
   $('#mintForm').addClass('hidden');
   $('#loading').removeClass('hidden');
   $('#mintMessage').html(`Attempting to mint ${amountToMint} tokens for ${Number(w3.utils.fromWei((gasLimit * gasPrice + mintValueWei).toString())).toFixed(5)} Ξ to wallet <b>${walletShort}</b>`);
+  console.log(`Estimated Gas: ${estimatedGas}\nGasPrice: ${gasPrice}`);
   res = await contract.methods.mintPublic(amountToMint).send({
     from: walletAddress,
     gasPrice: gasPrice,
