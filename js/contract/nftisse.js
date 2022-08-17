@@ -5,11 +5,6 @@ contractABI = [
         "internalType": "address",
         "name": "_proxyRegistryAddress",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rmuttAddress",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -181,20 +176,6 @@ contractABI = [
   },
   {
     "inputs": [],
-    "name": "RMUTT",
-    "outputs": [
-      {
-        "internalType": "contract IERC721Enumerable",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
-    "inputs": [],
     "name": "_contractURI",
     "outputs": [
       {
@@ -323,6 +304,34 @@ contractABI = [
   },
   {
     "inputs": [],
+    "name": "merkleRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [],
+    "name": "merkleSet",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [],
     "name": "mintingIsActive",
     "outputs": [
       {
@@ -418,6 +427,26 @@ contractABI = [
     "constant": true
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "publicBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -427,6 +456,26 @@ contractABI = [
   {
     "inputs": [],
     "name": "reserveTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "reservedBalance",
     "outputs": [
       {
         "internalType": "uint256",
@@ -629,26 +678,6 @@ contractABI = [
     "constant": true
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenUsed",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
     "inputs": [],
     "name": "totalSupply",
     "outputs": [
@@ -699,26 +728,6 @@ contractABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "walletBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
     "inputs": [],
     "name": "contractURI",
     "outputs": [
@@ -726,33 +735,6 @@ contractABI = [
         "internalType": "string",
         "name": "",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_a",
-        "type": "address"
-      }
-    ],
-    "name": "setRMUTTAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getMintAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amt",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -855,6 +837,19 @@ contractABI = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "root",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setMerkleRoot",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "reserveTokens",
     "outputs": [],
@@ -870,6 +865,40 @@ contractABI = [
       }
     ],
     "name": "mintPublic",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function",
+    "payable": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "whitelistedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "merkleProof",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numberOfTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "mintReserved",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function",
