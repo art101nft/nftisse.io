@@ -141,7 +141,6 @@ async function updateMintStatus() {
         const later = new Date(Number(new Date().getTime()) + (Number(timeUntilNext) * 1000)).getTime();
         const now = new Date().getTime();
         const distance = later - now;
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((distance % (1000 * 60)) / 1000);
@@ -150,7 +149,7 @@ async function updateMintStatus() {
         } else {
           seconds = `<30`;
         }
-        const countdown = `<b>${days} day, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+        const countdown = `<b>${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
         $('#mintMessage').html(`Minting is live for R. Mutt holders, but you are not elligible to mint right now! <br><br>Public minting opens in ${countdown} <div style="margin-top: 8px"></div><h2><b>${currentSupply} / ${maxSupply} minted</b></h2><div style="margin-top: 8px"></div>`);
         if (distance <= 0) {
           await updateMintStatus();
